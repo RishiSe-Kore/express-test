@@ -1,13 +1,15 @@
 const express = require('express');
+const axios = require('axios'); // Import axios at the top
 const app = express();
 const port = 4040;
 
 app.use(express.json()); // Enable parsing of JSON request bodies
 
-app.post('/asyncServer', (req, res) => {
-  console.log("🚀 ~ app.post ~ req:", req.headers)
+app.get('/asyncServer', (req, res) => {
+  console.log("🚀 ~ app.get ~ req:", req.headers)
   const callbackUrl = req.headers.callbackurl;
   const authToken = req.headers.token; // Assuming the authorization token is in the 'token' header
+  const delay = (parseInt(req.headers.delay) || 20) * 1000; // Take delay from headers, fallback to 20 seconds, convert to ms
 
   if (!callbackUrl) {
     return res.status(400).json({ error: 'Missing callback URL' });
@@ -20,7 +22,7 @@ app.post('/asyncServer', (req, res) => {
   // Extract the callId from the callback URL
   const callIdMatch = callbackUrl.match(/callflows\/([a-f0-9\-]+)\/serviceCallback/);
   const callId = callIdMatch ? callIdMatch[1] : null;
-  console.log("🚀 ~ app.post ~ callId:", callId)
+  console.log("🚀 ~ app.get ~ callId:", callId)
 
   if (!callId) {
     return res.status(400).json({ error: 'Invalid callback URL format' });
@@ -30,12 +32,11 @@ app.post('/asyncServer', (req, res) => {
   const data = {
     message: 'Async API processed successfully',
     timestamp: new Date().toISOString(),
-   // callId: callId, // Include the callId in the payload
-   };
+    // callId: callId, // Include the callId in the payload
+  };
 
   // Send the response to the callback URL
   setTimeout(() => { // Simulate asynchronous processing
-    const axios = require('axios'); // Import axios for making HTTP requests
     axios.post(callbackUrl, data, {
       headers: {
         'Authorization': authToken, // Include the original token in the callback
@@ -48,16 +49,18 @@ app.post('/asyncServer', (req, res) => {
       console.error('Error sending callback response:', error);
       res.status(500).json({ error: 'Failed to send response to callback URL' });
     });
-  }, 3000); // Simulate a 3-second delay 
+  }, delay); // Use delay from headers or fallback 
 });
 
-app.post('/syncServer', (req, res) => {
-  console.log("🚀 ~ app.post ~ req:", req.headers)
+app.get('/syncServer', (req, res) => {
+  console.log("🚀 ~ app.get ~ req:", req.headers)
+
+  const delay = (parseInt(req.headers.delay) || 20) * 1000; // Take delay from headers, fallback to 20 seconds, convert to ms
 
   setTimeout(() => { // Simulate synchronous processing
   
     return res.status(202).json({ message: 'Sync API processed successfully' })
-  }, 3000); // Simulate a 3-second delay 
+  }, delay); // Use delay from headers or fallback 
 
 });
 
