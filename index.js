@@ -58,10 +58,30 @@ app.get('/syncServer', (req, res) => {
   const delay = (parseInt(req.headers.delay) || 20) * 1000; // Take delay from headers, fallback to 20 seconds, convert to ms
 
   setTimeout(() => { // Simulate synchronous processing
-  
     return res.status(202).json({ message: 'Sync API processed successfully' })
   }, delay); // Use delay from headers or fallback 
 
+});
+
+app.get('/', (req, res) => {
+  const documentation = `
+    <h1>API Documentation</h1>
+    <h2>GET /asyncServer</h2>
+    <p>Asynchronously processes a request and sends the response to the callback URL after a specified delay.</p>
+    <p><strong>Headers:</strong></p>
+    <ul>
+      <li><strong>callbackurl</strong>: URL to send the response to (required)</li>
+      <li><strong>token</strong>: Authorization token (required)</li>
+      <li><strong>delay</strong>: Delay in seconds (optional, defaults to 20 seconds)</li>
+    </ul>
+    <h2>GET /syncServer</h2>
+    <p>Synchronously processes a request and sends the response after a specified delay.</p>
+    <p><strong>Headers:</strong></p>
+    <ul>
+      <li><strong>delay</strong>: Delay in seconds (optional, defaults to 20 seconds)</li>
+    </ul>
+  `;
+  res.send(documentation);
 });
 
 app.listen(port, () => {
